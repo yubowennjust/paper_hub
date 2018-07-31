@@ -34,25 +34,42 @@ web_context = get_context(url)
 link_list = re.findall(r"(?<=href=\").+?pdf(?=\">pdf)|(?<=href=\').+?pdf(?=\">pdf)",web_context)
 #name pattern: <a href="***_CVPR_2018_paper.html">***</a>
 name_list = re.findall(r"(?<=2018_paper.html\">).+(?=</a>)",web_context)
-
+# import csv
+# csvfile = open('cvpr18.csv', 'w')
+# writer = csv.writer(csvfile)
+# writer.writerow(['id', 'keywords'])
+# data = []
+# for x in range(len(link_list)):
+#     data.append((x, name_list[x]))
+#     print(data[x])
+#
+# writer.writerows(data)
+# csvfile.close()
 #download
 # create local filefolder
 local_dir = 'D:\\CVPR18\\'
 if not os.path.exists(local_dir):
     os.makedirs(local_dir)
 
-cnt = 0
-while cnt < len(link_list):
-    file_name = name_list[cnt]
-    download_url = link_list[cnt]
-    #为了可以保存为文件名，将标点符号和空格替换为'_'
+import threading
+import time
+
+def getpdf(arg):
+    time.sleep(1)
+    file_name = name_list[arg]
+    download_url = link_list[arg]
     file_name = re.sub('[:\?/]+',"_",file_name).replace(' ','_')
     file_path = local_dir + file_name + '.pdf'
-    #download
-    print( '['+str(cnt)+'/'+str(len(link_list))+'] Downloading' + file_path)
+    print( '['+str(arg)+'/'+str(len(link_list))+'] Downloading' + file_path)
     try:
         urllib.request.urlretrieve("http://openaccess.thecvf.com/" + download_url, file_path)
     except Exception as e:
-        print("GG")
-    cnt += 1
+        time.sleep(12)
+        urllib.request.urlretrieve("http://openaccess.thecvf.com/" + download_url, file_path)
+        # none123.append(arg)
+        # print(none123)
+
+for num in range(len(link_list)):
+    t = threading.Thread(target=getpdf,args=(num,))
+    t.start()
 print('Finished')
